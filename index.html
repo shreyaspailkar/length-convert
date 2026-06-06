@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Length Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800;900&family=Raleway+Dots&display=swap" rel="stylesheet">
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --yellow: #FBCE28;
+    --yellow-dim: rgba(251,206,40,0.15);
+    --yellow-glow: rgba(251,206,40,0.08);
+    --white: #FFFFFF;
+    --off-white: rgba(255,255,255,0.82);
+    --accent2: #FF7A3D;
+    --err: #FF4D4D;
+  }
+
+  /* ── DARK (default) ── */
+  :root, [data-theme="dark"] {
+    --bg: #111113;
+    --bg2: #17171a;
+    --surface: #1e1e22;
+    --surface2: #252529;
+    --border: rgba(255,255,255,0.08);
+    --border-focus: var(--yellow);
+    --text: var(--white);
+    --text2: var(--off-white);
+    --muted: rgba(255,255,255,0.35);
+    --placeholder: rgba(255,255,255,0.15);
+    --footer-c: rgba(255,255,255,0.2);
+    --toggle-bg: #2c2c31;
+    --toggle-on: var(--yellow);
+    --toggle-thumb: #666;
+    --toggle-thumb-on: #111;
+    --flash: rgba(251,206,40,0.10);
+    --expr-bg: rgba(251,206,40,0.06);
+    --expr-c: var(--yellow);
+    --err-bg: rgba(255,77,77,0.08);
+    --chip-border: rgba(255,255,255,0.12);
+    --chip-c: rgba(255,255,255,0.3);
+    --grid: rgba(251,206,40,0.025);
+    --label-bg: rgba(251,206,40,0.08);
+  }
+
+  /* ── LIGHT ── */
+  [data-theme="light"] {
+    --bg: #faf9f5;
+    --bg2: #f2f1ec;
+    --surface: #ffffff;
+    --surface2: #f5f4ef;
+    --border: rgba(0,0,0,0.10);
+    --border-focus: #b8920a;
+    --text: #111113;
+    --text2: #333336;
+    --muted: rgba(0,0,0,0.4);
+    --placeholder: rgba(0,0,0,0.18);
+    --footer-c: rgba(0,0,0,0.25);
+    --toggle-bg: #e2e1db;
+    --toggle-on: #b8920a;
+    --toggle-thumb: #aaa;
+    --toggle-thumb-on: #fff;
+    --flash: rgba(184,146,10,0.08);
+    --expr-bg: rgba(184,146,10,0.07);
+    --expr-c: #7a6000;
+    --err-bg: rgba(255,77,77,0.07);
+    --chip-border: rgba(0,0,0,0.12);
+    --chip-c: rgba(0,0,0,0.38);
+    --grid: rgba(0,0,0,0.03);
+    --label-bg: rgba(184,146,10,0.07);
+    --yellow: #b8920a;
+    --yellow-dim: rgba(184,146,10,0.12);
+    --accent2: #c94a10;
+    --err: #cc2222;
+  }
+
+  /* ── RESET ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    transition: background-color 0.4s, color 0.4s;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Raleway', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 20px 64px;
+    overflow-x: hidden;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  /* subtle dot-grid background */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: radial-gradient(circle, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 600px;
+  }
+
+  /* ────────────────── TOPBAR ────────────────── */
+  .topbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 28px;
+    animation: fadeDown 0.5s ease both;
+  }
+
+  .theme-toggle {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; user-select: none;
+  }
+
+  .toggle-label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); transition: color 0.3s;
+  }
+
+  .toggle-track {
+    width: 50px; height: 27px;
+    background: var(--toggle-bg);
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.35s;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  [data-theme="light"] .toggle-track { background: var(--toggle-on); border-color: transparent; }
+
+  .toggle-knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 19px; height: 19px; border-radius: 50%;
+    background: var(--toggle-thumb);
+    transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), background 0.35s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; line-height: 1;
+  }
+
+  [data-theme="light"] .toggle-knob {
+    transform: translateX(23px);
+    background: var(--toggle-thumb-on);
+  }
+
+  .i-moon { display: inline; }
+  .i-sun  { display: none; }
+  [data-theme="light"] .i-moon { display: none; }
+  [data-theme="light"] .i-sun  { display: inline; }
+
+  /* ────────────────── HEADER ────────────────── */
+  header {
+    margin-bottom: 44px;
+    animation: fadeDown 0.6s 0.05s ease both;
+  }
+
+  .eyebrow {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--yellow); margin-bottom: 12px;
+    transition: color 0.4s;
+  }
+
+  h1 {
+    font-size: clamp(2.6rem, 9vw, 4.2rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    transition: color 0.4s;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--yellow);
+    transition: color 0.4s;
+  }
+
+  .subtitle {
+    margin-top: 16px;
+    font-size: 13px; font-weight: 400;
+    color: var(--muted); line-height: 1.8;
+    transition: color 0.4s;
+  }
+
+  .hint-ops {
+    display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap;
+  }
+
+  .op-chip {
+    font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--chip-border);
+    color: var(--chip-c);
+    letter-spacing: 0.04em;
+    transition: border-color 0.4s, color 0.4s;
+    font-family: 'Raleway', sans-serif;
+  }
+
+  /* ────────────────── CONTROLS ────────────────── */
+  .controls-row {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px; gap: 12px;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  .precision-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); transition: color 0.4s;
+  }
+
+  .precision-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px; font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 20px;
+    cursor: pointer; outline: none;
+    transition: background 0.4s, border-color 0.2s, color 0.4s;
+    letter-spacing: 0.04em;
+  }
+
+  .precision-select:focus { border-color: var(--yellow); }
+
+  /* ────────────────── UNIT CARDS ────────────────── */
+  .units-grid { display: flex; flex-direction: column; gap: 10px; }
+
+  .unit-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: border-color 0.22s, transform 0.22s, background 0.4s, box-shadow 0.22s;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .unit-card:nth-child(1) { animation-delay: 0.08s; }
+  .unit-card:nth-child(2) { animation-delay: 0.13s; }
+  .unit-card:nth-child(3) { animation-delay: 0.18s; }
+  .unit-card:nth-child(4) { animation-delay: 0.23s; }
+  .unit-card:nth-child(5) { animation-delay: 0.28s; }
+
+  .unit-card:focus-within {
+    border-color: var(--yellow);
+    transform: translateY(-2px) translateX(2px);
+    box-shadow: 0 8px 32px var(--yellow-dim);
+  }
+
+  .unit-card.is-source {
+    border-color: var(--accent2);
+    box-shadow: 0 6px 24px rgba(255,122,61,0.15);
+  }
+
+  .unit-card.is-source .unit-name { color: var(--accent2); }
+  .unit-card.has-error { border-color: var(--err) !important; box-shadow: 0 4px 16px rgba(255,77,77,0.12) !important; }
+
+  /* inner row */
+  .card-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: stretch;
+  }
+
+  /* left label block */
+  .unit-label {
+    padding: 18px 16px;
+    border-right: 1.5px solid var(--border);
+    display: flex; flex-direction: column; justify-content: center;
+    background: var(--label-bg);
+    transition: border-color 0.4s, background 0.4s;
+    border-radius: 16px 0 0 0;
+  }
+
+  .unit-card:has(.expr-bar.visible) .unit-label { border-radius: 16px 0 0 0; }
+
+  .unit-name {
+    font-size: 20px; font-weight: 800;
+    color: var(--yellow); line-height: 1;
+    letter-spacing: -0.01em;
+    transition: color 0.4s;
+  }
+
+  .unit-full {
+    font-size: 9px; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-top: 4px;
+    transition: color 0.4s;
+  }
+
+  /* input */
+  .unit-input {
+    background: transparent; border: none; outline: none;
+    color: var(--text);
+    font-family: 'Raleway', sans-serif;
+    font-size: 22px; font-weight: 700;
+    padding: 18px 10px 18px 16px;
+    width: 100%; text-align: right;
+    letter-spacing: -0.01em;
+    transition: color 0.4s;
+    caret-color: var(--yellow);
+  }
+
+  .unit-input::placeholder {
+    color: var(--placeholder); font-weight: 400; font-size: 16px;
+  }
+
+  /* badge */
+  .unit-badge {
+    display: flex; align-items: center;
+    padding: 18px 18px 18px 6px;
+    font-size: 12px; font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 0.06em;
+    transition: color 0.4s;
+    white-space: nowrap;
+  }
+
+  /* expression preview strip */
+  .expr-bar {
+    display: none;
+    align-items: center; gap: 8px;
+    padding: 8px 18px 9px 18px;
+    border-top: 1px solid var(--border);
+    background: var(--expr-bg);
+    font-family: 'Raleway', sans-serif;
+    font-size: 12px; font-weight: 600;
+    transition: background 0.4s, border-color 0.4s;
+  }
+
+  .expr-bar.visible { display: flex; }
+  .expr-bar.error   { background: var(--err-bg); }
+
+  .expr-equals { color: var(--muted); flex-shrink: 0; font-size: 13px; }
+
+  .expr-result {
+    color: var(--expr-c); font-weight: 800; font-size: 14px;
+    flex: 1; text-align: right;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    transition: color 0.4s;
+  }
+
+  .expr-bar.error .expr-result { color: var(--err); }
+
+  .expr-unit { color: var(--muted); font-size: 10px; flex-shrink: 0; font-weight: 600; letter-spacing: 0.06em; }
+
+  /* ────────────────── RESET ────────────────── */
+  .btn-reset {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; margin-top: 18px; padding: 15px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    font-family: 'Raleway', sans-serif;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer; border-radius: 14px;
+    transition: all 0.22s;
+    animation: fadeUp 0.5s 0.42s ease both;
+  }
+
+  .btn-reset:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+    background: var(--yellow-glow);
+    transform: translateY(-1px);
+  }
+
+  /* ────────────────── FOOTER ────────────────── */
+  footer {
+    margin-top: 36px;
+    font-size: 10px; font-weight: 500;
+    color: var(--footer-c); text-align: center;
+    letter-spacing: 0.08em;
+    animation: fadeUp 0.5s 0.52s ease both;
+    transition: color 0.4s;
+    line-height: 1.8;
+  }
+
+  /* ────────────────── KEYFRAMES ────────────────── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes flash {
+    0%   { background: var(--flash); }
+    100% { background: transparent; }
+  }
+  .unit-input.updated { animation: flash 0.45s ease; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="theme-toggle" id="themeToggle" title="Toggle light / dark">
+      <span class="toggle-label" id="themeLabel">Dark</span>
+      <div class="toggle-track">
+        <div class="toggle-knob">
+          <span class="i-moon">🌙</span>
+          <span class="i-sun">☀️</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="eyebrow">Unit Converter</div>
+    <h1>LENGTH<br><em>CONVERT</em></h1>
+    <p class="subtitle">
+      Type a value — or a math expression — in any field.<br>
+      <span class="hint-ops">
+        <span class="op-chip">2 + 2</span>
+        <span class="op-chip">30 − 5.5</span>
+        <span class="op-chip">12 × 3</span>
+        <span class="op-chip">100 / 4</span>
+        <span class="op-chip">(6+4) × 2</span>
+      </span>
+    </p>
+  </header>
+
+  <!-- PRECISION -->
+  <div class="controls-row">
+    <span class="precision-label">Decimal places</span>
+    <select class="precision-select" id="precision">
+      <option value="2">2 digits</option>
+      <option value="4" selected>4 digits</option>
+      <option value="6">6 digits</option>
+      <option value="8">8 digits</option>
+    </select>
+  </div>
+
+  <!-- CARDS -->
+  <div class="units-grid" id="unitsGrid">
+
+    <div class="unit-card" data-unit="mm">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">mm</div><div class="unit-full">Millimetre</div></div>
+        <input class="unit-input" type="text" id="input-mm" placeholder="0  or  2+2" autocomplete="off" spellcheck="false">
+        <div class="unit-badge">mm</div>
+      </div>
+      <div class="expr-bar" id="expr-mm">
+        <span class="expr-equals">=</span>
+        <span class="expr-result" id="exprval-mm"></span>
+        <span class="expr-unit">mm</span>
+      </div>
+    </div>
+
+    <div class="unit-card" data-unit="cm">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">cm</div><div class="unit-full">Centimetre</div></div>
+        <input class="unit-input" type="text" id="input-cm" placeholder="0  or  2+2" autocomplete="off" spellcheck="false">
+        <div class="unit-badge">cm</div>
+      </div>
+      <div class="expr-bar" id="expr-cm">
+        <span class="expr-equals">=</span>
+        <span class="expr-result" id="exprval-cm"></span>
+        <span class="expr-unit">cm</span>
+      </div>
+    </div>
+
+    <div class="unit-card" data-unit="in">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">in</div><div class="unit-full">Inch</div></div>
+        <input class="unit-input" type="text" id="input-in" placeholder="0  or  2+2" autocomplete="off" spellcheck="false">
+        <div class="unit-badge">in</div>
+      </div>
+      <div class="expr-bar" id="expr-in">
+        <span class="expr-equals">=</span>
+        <span class="expr-result" id="exprval-in"></span>
+        <span class="expr-unit">in</span>
+      </div>
+    </div>
+
+    <div class="unit-card" data-unit="ft">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">ft</div><div class="unit-full">Foot</div></div>
+        <input class="unit-input" type="text" id="input-ft" placeholder="0  or  2+2" autocomplete="off" spellcheck="false">
+        <div class="unit-badge">ft</div>
+      </div>
+      <div class="expr-bar" id="expr-ft">
+        <span class="expr-equals">=</span>
+        <span class="expr-result" id="exprval-ft"></span>
+        <span class="expr-unit">ft</span>
+      </div>
+    </div>
+
+    <div class="unit-card" data-unit="m">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">m</div><div class="unit-full">Metre</div></div>
+        <input class="unit-input" type="text" id="input-m" placeholder="0  or  2+2" autocomplete="off" spellcheck="false">
+        <div class="unit-badge">m</div>
+      </div>
+      <div class="expr-bar" id="expr-m">
+        <span class="expr-equals">=</span>
+        <span class="expr-result" id="exprval-m"></span>
+        <span class="expr-unit">m</span>
+      </div>
+    </div>
+
+  </div>
+
+  <button class="btn-reset" id="resetBtn">⌫ &nbsp; Clear all fields</button>
+
+  <footer>
+    supports + − × ÷ and ( ) parentheses<br>
+    all conversions via SI base unit · metre
+  </footer>
+</div>
+
+<script>
+// ── THEME ──────────────────────────────────────────────
+const html = document.documentElement;
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const goLight = html.getAttribute('data-theme') !== 'light';
+  html.setAttribute('data-theme', goLight ? 'light' : 'dark');
+  document.getElementById('themeLabel').textContent = goLight ? 'Light' : 'Dark';
+});
+
+// ── SAFE MATH PARSER ───────────────────────────────────
+function safeEval(expr) {
+  const s = expr.trim()
+    .replace(/\s+/g, '')
+    .replace(/×/g, '*').replace(/÷/g, '/')
+    .replace(/−/g, '-').replace(/–/g, '-');
+
+  if (!/^[0-9+\-*/().]+$/.test(s)) throw new Error('bad chars');
+  if (!s) throw new Error('empty');
+
+  let pos = 0;
+  const peek = () => s[pos];
+  const eat  = () => s[pos++];
+
+  function expr_()    { return addSub(); }
+  function addSub() {
+    let v = mulDiv();
+    while (pos < s.length && (peek()==='+' || peek()==='-')) {
+      const op = eat(); const r = mulDiv();
+      v = op==='+' ? v+r : v-r;
+    }
+    return v;
+  }
+  function mulDiv() {
+    let v = unary();
+    while (pos < s.length && (peek()==='*' || peek()==='/')) {
+      const op = eat(); const r = unary();
+      if (op==='/' && r===0) throw new Error('div0');
+      v = op==='*' ? v*r : v/r;
+    }
+    return v;
+  }
+  function unary() {
+    if (peek()==='-') { eat(); return -primary(); }
+    if (peek()==='+') { eat(); return  primary(); }
+    return primary();
+  }
+  function primary() {
+    if (peek()==='(') {
+      eat();
+      const v = expr_();
+      if (peek()!==')') throw new Error('no )');
+      eat(); return v;
+    }
+    const st = pos;
+    while (pos<s.length && /[0-9.]/.test(s[pos])) pos++;
+    const ns = s.slice(st, pos);
+    if (!ns || ns==='.') throw new Error('expected num');
+    const n = parseFloat(ns);
+    if (isNaN(n)) throw new Error('NaN');
+    return n;
+  }
+
+  const result = expr_();
+  if (pos !== s.length) throw new Error('leftover');
+  return result;
+}
+
+function isPlain(s) { return /^-?[0-9]*\.?[0-9]+$/.test(s.trim()); }
+
+// ── CONVERTER ─────────────────────────────────────────
+const toM = { mm:0.001, cm:0.01, in:0.0254, ft:0.3048, m:1 };
+const UNITS = ['mm','cm','in','ft','m'];
+let activeUnit = null;
+
+const prec = () => parseInt(document.getElementById('precision').value);
+const fmt  = n  => parseFloat(n.toFixed(prec())).toString();
+
+function convertAll(val, from) {
+  const m = val * toM[from];
+  const r = {};
+  UNITS.forEach(u => r[u] = m / toM[u]);
+  return r;
+}
+
+function setOutputs(from, num) {
+  const res = convertAll(num, from);
+  UNITS.forEach(u => {
+    if (u === from) return;
+    const el = document.getElementById('input-' + u);
+    el.value = fmt(res[u]);
+    document.getElementById('expr-' + u).classList.remove('visible','error');
+    el.classList.remove('updated'); void el.offsetWidth; el.classList.add('updated');
+  });
+}
+
+function clearOutputs(except) {
+  UNITS.forEach(u => {
+    if (u === except) return;
+    document.getElementById('input-' + u).value = '';
+    document.getElementById('expr-' + u).classList.remove('visible','error');
+  });
+}
+
+function handleInput(unit) {
+  const input = document.getElementById('input-' + unit);
+  const card  = input.closest('.unit-card');
+  const bar   = document.getElementById('expr-' + unit);
+  const valEl = document.getElementById('exprval-' + unit);
+  const raw   = input.value.trim();
+
+  document.querySelectorAll('.unit-card').forEach(c => c.classList.remove('is-source'));
+  card.classList.add('is-source');
+  card.classList.remove('has-error');
+  activeUnit = unit;
+
+  if (!raw) {
+    bar.classList.remove('visible','error');
+    clearOutputs(unit); return;
+  }
+
+  let result;
+  try { result = safeEval(raw); }
+  catch(e) {
+    if (/[+\-*/]$/.test(raw) || raw === '(') {
+      bar.classList.remove('visible','error');
+    } else {
+      bar.classList.add('visible','error');
+      valEl.textContent = 'invalid expression';
+      card.classList.add('has-error');
+    }
+    clearOutputs(unit); return;
+  }
+
+  if (!isFinite(result)) {
+    bar.classList.add('visible','error');
+    valEl.textContent = 'result is infinite';
+    card.classList.add('has-error');
+    clearOutputs(unit); return;
+  }
+
+  if (!isPlain(raw)) {
+    bar.classList.add('visible'); bar.classList.remove('error');
+    valEl.textContent = fmt(result);
+  } else {
+    bar.classList.remove('visible','error');
+  }
+
+  setOutputs(unit, result);
+}
+
+function commit(unit) {
+  const input = document.getElementById('input-' + unit);
+  const bar   = document.getElementById('expr-' + unit);
+  const raw   = input.value.trim();
+  if (isPlain(raw) || !raw) return;
+  try {
+    const r = safeEval(raw);
+    if (isFinite(r)) {
+      input.value = fmt(r);
+      bar.classList.remove('visible','error');
+      input.closest('.unit-card').classList.remove('has-error');
+      handleInput(unit);
+    }
+  } catch(e) {}
+}
+
+UNITS.forEach(unit => {
+  const input = document.getElementById('input-' + unit);
+  const card  = input.closest('.unit-card');
+
+  input.addEventListener('input',   () => handleInput(unit));
+  input.addEventListener('keydown', e => {
+    if (e.key==='Enter' || e.key==='=') { e.preventDefault(); commit(unit); }
+  });
+  input.addEventListener('focus', () => {
+    document.querySelectorAll('.unit-card').forEach(c => c.classList.remove('is-source'));
+    card.classList.add('is-source');
+  });
+  input.addEventListener('blur', () => {
+    commit(unit);
+    if (!input.value) {
+      card.classList.remove('is-source');
+      document.getElementById('expr-' + unit).classList.remove('visible','error');
+    }
+  });
+});
+
+document.getElementById('precision').addEventListener('change', () => {
+  if (activeUnit) {
+    const v = document.getElementById('input-' + activeUnit).value;
+    if (v) handleInput(activeUnit);
+  }
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  UNITS.forEach(u => {
+    document.getElementById('input-' + u).value = '';
+    document.getElementById('expr-' + u).classList.remove('visible','error');
+    document.getElementById('input-' + u).closest('.unit-card').classList.remove('is-source','has-error');
+  });
+  activeUnit = null;
+  document.getElementById('input-mm').focus();
+});
+</script>
+</body>
+</html>
