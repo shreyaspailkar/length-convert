@@ -99,15 +99,33 @@
   /* ── CARDS ── */
   .units-grid { display: flex; flex-direction: column; gap: 10px; }
 
+  .unit-group-label {
+    display: flex; align-items: center; gap: 10px;
+    margin: 6px 2px 2px;
+  }
+  .unit-group-label span {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; transition: color 0.4s;
+  }
+  .unit-group-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--border); transition: background 0.4s;
+  }
+  /* nth-child delays now cover 6 cards + 2 label divs */
+  .unit-card:nth-child(1){animation-delay:.08s}
+  .unit-card:nth-child(2){animation-delay:.13s}
+  .unit-card:nth-child(3){animation-delay:.18s}
+  .unit-card:nth-child(4){animation-delay:.25s}
+  .unit-card:nth-child(5){animation-delay:.30s}
+  .unit-card:nth-child(6){animation-delay:.35s}
+
   .unit-card {
     background: var(--surface); border: 1.5px solid var(--border);
     border-radius: 18px; overflow: hidden;
     transition: border-color 0.22s, transform 0.22s, background 0.4s, box-shadow 0.22s;
     animation: fadeUp 0.5s ease both;
   }
-  .unit-card:nth-child(1){animation-delay:.08s} .unit-card:nth-child(2){animation-delay:.13s}
-  .unit-card:nth-child(3){animation-delay:.18s} .unit-card:nth-child(4){animation-delay:.23s}
-  .unit-card:nth-child(5){animation-delay:.28s}
 
   .unit-card.is-active { border-color: var(--yellow); box-shadow: 0 8px 32px var(--yellow-dim); }
   .unit-card.is-source { border-color: var(--accent2); box-shadow: 0 6px 24px rgba(255,122,61,0.15); }
@@ -158,9 +176,7 @@
   .btn-reset { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 18px; padding: 15px; background: transparent; border: 1.5px solid var(--border); color: var(--muted); font-family: 'Raleway', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; border-radius: 14px; transition: all 0.22s; animation: fadeUp 0.5s 0.42s ease both; }
   .btn-reset:hover, .btn-reset:active { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-glow); }
 
-  footer { margin-top: 36px; font-size: 10px; font-weight: 500; color: var(--footer-c); text-align: center; letter-spacing: 0.08em; animation: fadeUp 0.5s 0.52s ease both; transition: color 0.4s; line-height: 1.8; }
-
-  /* ═══════════════════════════════════════
+  footer { margin-top: 36px; font-size: 10px; font-weight: 500; color: var(--footer-c); text-align: center; letter-spacing: 0.08em; animation: fadeUp 0.5s 0.52s ease both; transition: color 0.4s; line-height: 1.8; }/* ═══════════════════════════════════════
      CUSTOM KEYPAD
   ═══════════════════════════════════════ */
   .keypad-backdrop {
@@ -300,6 +316,9 @@
 
   <div class="units-grid" id="unitsGrid">
 
+    <!-- METRIC -->
+    <div class="unit-group-label"><span>Metric</span></div>
+
     <div class="unit-card" data-unit="mm">
       <div class="card-row">
         <div class="unit-label"><div class="unit-name">mm</div><div class="unit-full">Millimetre</div></div>
@@ -317,6 +336,18 @@
       </div>
       <div class="expr-bar" id="expr-cm"><span class="expr-equals">=</span><span class="expr-result" id="exprval-cm"></span><span class="expr-unit">cm</span></div>
     </div>
+
+    <div class="unit-card" data-unit="m">
+      <div class="card-row">
+        <div class="unit-label"><div class="unit-name">m</div><div class="unit-full">Metre</div></div>
+        <div class="unit-display empty" id="disp-m">0</div>
+        <div class="unit-badge">m</div>
+      </div>
+      <div class="expr-bar" id="expr-m"><span class="expr-equals">=</span><span class="expr-result" id="exprval-m"></span><span class="expr-unit">m</span></div>
+    </div>
+
+    <!-- IMPERIAL -->
+    <div class="unit-group-label"><span>Imperial</span></div>
 
     <div class="unit-card" data-unit="in">
       <div class="card-row">
@@ -336,20 +367,21 @@
       <div class="expr-bar" id="expr-ft"><span class="expr-equals">=</span><span class="expr-result" id="exprval-ft"></span><span class="expr-unit">ft</span></div>
     </div>
 
-    <div class="unit-card" data-unit="m">
+    <div class="unit-card" data-unit="yd">
       <div class="card-row">
-        <div class="unit-label"><div class="unit-name">m</div><div class="unit-full">Metre</div></div>
-        <div class="unit-display empty" id="disp-m">0</div>
-        <div class="unit-badge">m</div>
+        <div class="unit-label"><div class="unit-name">yd</div><div class="unit-full">Yard</div></div>
+        <div class="unit-display empty" id="disp-yd">0</div>
+        <div class="unit-badge">yd</div>
       </div>
-      <div class="expr-bar" id="expr-m"><span class="expr-equals">=</span><span class="expr-result" id="exprval-m"></span><span class="expr-unit">m</span></div>
+      <div class="expr-bar" id="expr-yd"><span class="expr-equals">=</span><span class="expr-result" id="exprval-yd"></span><span class="expr-unit">yd</span></div>
     </div>
 
   </div>
 
   <button class="btn-reset" id="resetBtn">⌫ &nbsp; Clear all fields</button>
+  </div>
 
-  <footer>
+    <footer>
     tap a field · use the keypad · press = to evaluate<br>
     all conversions via SI base unit · metre
   </footer>
@@ -423,11 +455,11 @@ function safeEval(expr) {
 function isPlain(s){return /^-?[0-9]*\.?[0-9]+$/.test(s.trim());}
 
 // ── CONVERTER ─────────────────────────────────────────
-const toM={mm:.001,cm:.01,in:.0254,ft:.3048,m:1};
-const UNITS=['mm','cm','in','ft','m'];
+const toM={mm:.001,cm:.01,m:1,in:.0254,ft:.3048,yd:.9144};
+const UNITS=['mm','cm','m','in','ft','yd'];
 let activeUnit=null;
 // raw expression per unit
-const exprs={mm:'',cm:'',in:'',ft:'',m:''};
+const exprs={mm:'',cm:'',m:'',in:'',ft:'',yd:''};
 
 const prec=()=>parseInt(document.getElementById('precision').value);
 const fmt=n=>parseFloat(n.toFixed(prec())).toString();
@@ -534,6 +566,7 @@ function openKeypad(unit){
 
 function closeKeypad(){
   if(activeUnit){
+    const raw=exprs[activeUnit];
     commitExpr(activeUnit);
     document.querySelectorAll('.unit-card').forEach(c=>c.classList.remove('is-active'));
     UNITS.forEach(u=>renderDisplay(u,exprs[u]));
